@@ -1,0 +1,52 @@
+#!/usr/bin/env perl
+use Mojolicious::Lite;
+
+plugin 'JSONConfig';
+
+any '/' => sub {
+  my $c = shift;
+
+  log_request( $c );
+
+  my $value = time;
+  $c->render( json => { success => 1, epoche => $value, id => $value } );
+};
+
+any '/graphql' => sub {
+  my $c = shift;
+
+  log_request( $c );
+  sleep 10;
+
+  my $value = time;
+  $c->render( json => { success => 1, epoche => $value, id => $value, data => { contacts => [{ contact_id =>1, contact_name => 'Minati' }] } } );
+};
+
+
+any '*' => sub {
+  my $c = shift;
+
+  log_request( $c );
+
+  my $value = time;
+  $c->render( json => { success => 1, epoche => $value, id => $value } );
+};
+
+app->start;
+
+sub log_request {
+    my ($c) = @_;
+
+    my $req = $c->tx->req;
+
+    my $data = {
+        body     => $req->body,
+        method   => $req->method,
+        userinfo => $req->url->to_abs->userinfo,
+        url      => $req->url->to_abs->to_string,
+        params   => $req->params->to_hash,
+    };
+
+    $c->app->log->error( $c->dumper( $data ) );
+}
+
